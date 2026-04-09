@@ -5,6 +5,7 @@ This module provides functionality to test if a provider's API key is valid
 by making minimal API calls to each provider, and to test individual model
 configurations end-to-end.
 """
+
 import io
 import os
 import struct
@@ -52,7 +53,9 @@ async def _test_azure_connection(
     """
     test_endpoint = endpoint or os.environ.get("AZURE_OPENAI_ENDPOINT")
     test_api_key = api_key or os.environ.get("AZURE_OPENAI_API_KEY")
-    test_api_version = api_version or os.environ.get("AZURE_OPENAI_API_VERSION", "2024-10-21")
+    test_api_version = api_version or os.environ.get(
+        "AZURE_OPENAI_API_VERSION", "2024-10-21"
+    )
 
     if not test_endpoint:
         return False, "No Azure endpoint configured"
@@ -113,7 +116,10 @@ async def _test_ollama_connection(base_url: str) -> Tuple[bool, str]:
                     model_list = ", ".join(model_names)
                     if model_count > 3:
                         model_list += f" (+{model_count - 3} more)"
-                    return True, f"Connected. {model_count} models available: {model_list}"
+                    return (
+                        True,
+                        f"Connected. {model_count} models available: {model_list}",
+                    )
                 else:
                     return True, "Connected successfully (no models listed)"
             elif response.status_code == 401:
@@ -131,7 +137,9 @@ async def _test_ollama_connection(base_url: str) -> Tuple[bool, str]:
         return False, f"Connection error: {str(e)[:100]}"
 
 
-async def _test_openai_compatible_connection(base_url: str, api_key: Optional[str] = None) -> Tuple[bool, str]:
+async def _test_openai_compatible_connection(
+    base_url: str, api_key: Optional[str] = None
+) -> Tuple[bool, str]:
     """Test OpenAI-compatible server connectivity."""
     try:
         headers = {}
@@ -152,7 +160,10 @@ async def _test_openai_compatible_connection(base_url: str, api_key: Optional[st
                     model_list = ", ".join(model_names)
                     if model_count > 3:
                         model_list += f" (+{model_count - 3} more)"
-                    return True, f"Connected. {model_count} models available: {model_list}"
+                    return (
+                        True,
+                        f"Connected. {model_count} models available: {model_list}",
+                    )
                 else:
                     return True, "Connected successfully (no models listed)"
             elif response.status_code == 401:
@@ -168,6 +179,7 @@ async def _test_openai_compatible_connection(base_url: str, api_key: Optional[st
         return False, "Connection timed out. Check if server is accessible."
     except Exception as e:
         return False, f"Connection error: {str(e)[:100]}"
+
 
 async def test_provider_connection(
     provider: str, model_type: str = "language", config_id: Optional[str] = None
@@ -211,7 +223,9 @@ async def test_provider_connection(
         # Special handling for URL-based providers (no API key, just connectivity)
         if normalized_provider == "ollama":
             # Use base_url from specific config, or environment variable
-            test_base_url = base_url or os.environ.get("OLLAMA_API_BASE", "http://localhost:11434")
+            test_base_url = base_url or os.environ.get(
+                "OLLAMA_API_BASE", "http://localhost:11434"
+            )
             return await _test_ollama_connection(test_base_url)
 
         if normalized_provider == "openai_compatible":
@@ -238,9 +252,13 @@ async def test_provider_connection(
         if model_to_use is None:
             if normalized_provider == "openai_compatible":
                 # OpenAI-compatible servers should already be tested via _test_openai_compatible_connection
-                test_base_url = base_url or os.environ.get("OPENAI_COMPATIBLE_BASE_URL", "")
+                test_base_url = base_url or os.environ.get(
+                    "OPENAI_COMPATIBLE_BASE_URL", ""
+                )
                 test_api_key = api_key or os.environ.get("OPENAI_COMPATIBLE_API_KEY")
-                return await _test_openai_compatible_connection(test_base_url, test_api_key)
+                return await _test_openai_compatible_connection(
+                    test_base_url, test_api_key
+                )
             else:
                 return False, f"No test model configured for {provider}"
 
@@ -250,14 +268,18 @@ async def test_provider_connection(
 
         # Try to create the model and make a minimal call
         if test_model_type == "language":
-            model = AIFactory.create_language(model_name=model_to_use, provider=provider)
+            model = AIFactory.create_language(
+                model_name=model_to_use, provider=provider
+            )
             # Convert to LangChain and make a minimal call
             lc_model = model.to_langchain()
             await lc_model.ainvoke("Hi")
             return True, "Connection successful"
 
         elif test_model_type == "embedding":
-            model = AIFactory.create_embedding(model_name=model_to_use, provider=provider)
+            model = AIFactory.create_embedding(
+                model_name=model_to_use, provider=provider
+            )
             # Embed a single short test string
             await model.aembed(["test"])
             return True, "Connection successful"
@@ -266,9 +288,7 @@ async def test_provider_connection(
             # For TTS, we just verify the model can be created
             # Making an actual TTS call would be more expensive
             # Most TTS providers validate the key on model creation
-            AIFactory.create_text_to_speech(
-                model_name=model_to_use, provider=provider
-            )
+            AIFactory.create_text_to_speech(model_name=model_to_use, provider=provider)
             return True, "Connection successful (key format valid)"
 
         else:
@@ -422,9 +442,7 @@ async def test_individual_model(model) -> Tuple[bool, str]:
 
         elif model.type == "speech_to_text":
             audio_file = _generate_test_wav()
-            result = await esp_model.atranscribe(
-                audio_file=audio_file, language="en"
-            )
+            result = await esp_model.atranscribe(audio_file=audio_file, language="en")
             text = str(result.text) if hasattr(result, "text") else str(result)
             return True, f"Transcription: {text[:100]}"
 
