@@ -12,16 +12,6 @@ from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.auth import PasswordAuthMiddleware
-from open_notebook.exceptions import (
-    AuthenticationError,
-    ConfigurationError,
-    ExternalServiceError,
-    InvalidInputError,
-    NetworkError,
-    NotFoundError,
-    OpenNotebookError,
-    RateLimitError,
-)
 from api.routers import (
     auth,
     chat,
@@ -42,10 +32,21 @@ from api.routers import (
     source_chat,
     sources,
     speaker_profiles,
+    trading,
     transformations,
 )
 from api.routers import commands as commands_router
 from open_notebook.database.async_migrate import AsyncMigrationManager
+from open_notebook.exceptions import (
+    AuthenticationError,
+    ConfigurationError,
+    ExternalServiceError,
+    InvalidInputError,
+    NetworkError,
+    NotFoundError,
+    OpenNotebookError,
+    RateLimitError,
+)
 from open_notebook.utils.encryption import get_secret_from_env
 
 # Import commands to register them in the API process
@@ -269,6 +270,7 @@ app.include_router(
     embedding_rebuild.router, prefix="/api/embeddings", tags=["embeddings"]
 )
 app.include_router(settings.router, prefix="/api", tags=["settings"])
+app.include_router(trading.router, prefix="/api", tags=["trading"])
 app.include_router(context.router, prefix="/api", tags=["context"])
 app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
