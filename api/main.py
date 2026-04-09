@@ -12,16 +12,6 @@ from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.auth import PasswordAuthMiddleware
-from open_notebook.exceptions import (
-    AuthenticationError,
-    ConfigurationError,
-    ExternalServiceError,
-    InvalidInputError,
-    NetworkError,
-    NotFoundError,
-    OpenNotebookError,
-    RateLimitError,
-)
 from api.routers import (
     auth,
     chat,
@@ -36,6 +26,7 @@ from api.routers import (
     models,
     notebooks,
     notes,
+    podcast_cloner,
     podcasts,
     search,
     settings,
@@ -46,6 +37,16 @@ from api.routers import (
 )
 from api.routers import commands as commands_router
 from open_notebook.database.async_migrate import AsyncMigrationManager
+from open_notebook.exceptions import (
+    AuthenticationError,
+    ConfigurationError,
+    ExternalServiceError,
+    InvalidInputError,
+    NetworkError,
+    NotFoundError,
+    OpenNotebookError,
+    RateLimitError,
+)
 from open_notebook.utils.encryption import get_secret_from_env
 
 # Import commands to register them in the API process
@@ -166,7 +167,8 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         status_code=exc.status_code,
         content={"detail": exc.detail},
         headers={
-            **(exc.headers or {}), "Access-Control-Allow-Origin": origin,
+            **(exc.headers or {}),
+            "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Methods": "*",
             "Access-Control-Allow-Headers": "*",
@@ -274,6 +276,7 @@ app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
 app.include_router(commands_router.router, prefix="/api", tags=["commands"])
 app.include_router(podcasts.router, prefix="/api", tags=["podcasts"])
+app.include_router(podcast_cloner.router, prefix="/api", tags=["podcast-cloner"])
 app.include_router(episode_profiles.router, prefix="/api", tags=["episode-profiles"])
 app.include_router(speaker_profiles.router, prefix="/api", tags=["speaker-profiles"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
