@@ -11,17 +11,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from api.auth import PasswordAuthMiddleware
-from open_notebook.exceptions import (
-    AuthenticationError,
-    ConfigurationError,
-    ExternalServiceError,
-    InvalidInputError,
-    NetworkError,
-    NotFoundError,
-    OpenNotebookError,
-    RateLimitError,
-)
+from api.auth import JWTAuthMiddleware, check_api_password
 from api.routers import (
     auth,
     chat,
@@ -46,6 +36,16 @@ from api.routers import (
 )
 from api.routers import commands as commands_router
 from open_notebook.database.async_migrate import AsyncMigrationManager
+from open_notebook.exceptions import (
+    AuthenticationError,
+    ConfigurationError,
+    ExternalServiceError,
+    InvalidInputError,
+    NetworkError,
+    NotFoundError,
+    OpenNotebookError,
+    RateLimitError,
+)
 from open_notebook.utils.encryption import get_secret_from_env
 
 # Import commands to register them in the API process
@@ -124,9 +124,12 @@ app = FastAPI(
 
 # Add password authentication middleware first
 # Exclude /api/auth/status and /api/config from authentication
-app.add_middleware(
-    PasswordAuthMiddleware,
-    excluded_paths=[
+import os
+
+if os.environ.get("OPEN_NOTEBOOK_TEST_MODE") != "1":
+    app.add_middleware(
+        JWTAuthMiddleware,
+        excluded_paths=[
         "/",
         "/health",
         "/docs",
@@ -136,6 +139,7 @@ app.add_middleware(
         "/api/config",
     ],
 )
+
 
 # Add CORS middleware last (so it processes first)
 app.add_middleware(

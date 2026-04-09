@@ -19,6 +19,7 @@ from open_notebook.database.repository import (
     repo_update,
     repo_upsert,
 )
+from open_notebook.domain.user_context import get_current_user_id
 from open_notebook.exceptions import (
     DatabaseOperationError,
     InvalidInputError,
@@ -34,6 +35,7 @@ class ObjectModel(BaseModel):
     nullable_fields: ClassVar[set[str]] = set()  # Fields that can be saved as None
     created: Optional[datetime] = None
     updated: Optional[datetime] = None
+    owner: Optional[str] = None
 
     @classmethod
     async def get_all(cls: Type[T], order_by=None) -> List[T]:
@@ -66,9 +68,10 @@ class ObjectModel(BaseModel):
                             )
                         validated_clauses.append(parts[0].lower())
                     elif len(parts) == 2:
-                        if not allowed_field_pattern.match(
-                            parts[0].lower()
-                        ) or parts[1].lower() not in allowed_directions:
+                        if (
+                            not allowed_field_pattern.match(parts[0].lower())
+                            or parts[1].lower() not in allowed_directions
+                        ):
                             raise InvalidInputError(
                                 f"Invalid order_by clause: '{clause.strip()}'"
                             )
@@ -84,6 +87,20 @@ class ObjectModel(BaseModel):
                 query = f"SELECT * FROM {table_name} ORDER BY {validated_order_by}"
             else:
                 query = f"SELECT * FROM {table_name}"
+
+            user_id = get_current_user_id()
+            if user_id:
+                # Add WHERE clause or append to existing one
+                if "WHERE" in query:
+                    query = query.replace("WHERE", f"WHERE owner = '{user_id}' AND", 1)
+                else:
+                    query = (
+                        query.replace(
+                            "ORDER BY", f"WHERE owner = '{user_id}' ORDER BY", 1
+                        )
+                        if "ORDER BY" in query
+                        else f"{query} WHERE owner = '{user_id}'"
+                    )
 
             result = await repo_query(query)
             objects = []
@@ -119,7 +136,16 @@ class ObjectModel(BaseModel):
 
             result = await repo_query("SELECT * FROM $id", {"id": ensure_record_id(id)})
             if result:
-                return target_class(**result[0])
+                obj = target_class(**result[0])
+                user_id = get_current_user_id()
+                # Enforce owner match if user_id is set
+                if (
+                    user_id
+                    and getattr(obj, "owner", None)
+                    and str(getattr(obj, "owner")) != user_id
+                ):
+                    raise NotFoundError(f"{table_name} with id {id} not found")
+                return obj
             else:
                 raise NotFoundError(f"{table_name} with id {id} not found")
         except Exception as e:
@@ -194,6 +220,14 @@ class ObjectModel(BaseModel):
 
     def _prepare_save_data(self) -> Dict[str, Any]:
         data = self.model_dump()
+        user_id = get_current_user_id()
+        if user_id and not data.get("owner"):
+            data["owner"] = ensure_record_id(user_id)
+
+        # Ensure owner is a RecordID string if present
+        if data.get("owner"):
+            data["owner"] = ensure_record_id(data["owner"])
+
         return {
             key: value
             for key, value in data.items()
@@ -279,12 +313,20 @@ class RecordModel(BaseModel):
             object.__setattr__(self, "_initialized", True)
             object.__setattr__(self, "_db_loaded", False)
 
+    @property
+    def scoped_record_id(self) -> str:
+        user_id = get_current_user_id()
+        if user_id:
+            user_part = str(user_id).split(":")[1]
+            return f"{self.record_id}_{user_part}"
+        return self.record_id
+
     async def _load_from_db(self):
         """Load data from database if not already loaded"""
         if not getattr(self, "_db_loaded", False):
             result = await repo_query(
                 "SELECT * FROM ONLY $record_id",
-                {"record_id": ensure_record_id(self.record_id)},
+                {"record_id": ensure_record_id(self.scoped_record_id)},
             )
 
             # Handle case where record doesn't exist yet
@@ -332,12 +374,13 @@ class RecordModel(BaseModel):
             self.__class__.table_name
             if hasattr(self.__class__, "table_name")
             else "record",
-            self.record_id,
+            self.scoped_record_id,
             data,
         )
 
         result = await repo_query(
-            "SELECT * FROM $record_id", {"record_id": ensure_record_id(self.record_id)}
+            "SELECT * FROM $record_id",
+            {"record_id": ensure_record_id(self.scoped_record_id)},
         )
         if result:
             for key, value in result[0].items():

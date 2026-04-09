@@ -99,8 +99,13 @@ class Credential(ObjectModel):
     @classmethod
     async def get_by_provider(cls, provider: str) -> List["Credential"]:
         """Get all credentials for a provider."""
+        from open_notebook.domain.user_context import get_current_user_id
+
+        user_id = get_current_user_id()
+        owner_filter = f" AND owner = '{user_id}'" if user_id else ""
+
         results = await repo_query(
-            "SELECT * FROM credential WHERE string::lowercase(provider) = string::lowercase($provider) ORDER BY created ASC",
+            f"SELECT * FROM credential WHERE string::lowercase(provider) = string::lowercase($provider){owner_filter} ORDER BY created ASC",
             {"provider": provider},
         )
         credentials = []
@@ -148,9 +153,13 @@ class Credential(ObjectModel):
         if not self.id:
             return []
         from open_notebook.ai.models import Model
+        from open_notebook.domain.user_context import get_current_user_id
+
+        user_id = get_current_user_id()
+        owner_filter = f" AND owner = '{user_id}'" if user_id else ""
 
         results = await repo_query(
-            "SELECT * FROM model WHERE credential = $cred_id",
+            f"SELECT * FROM model WHERE credential = $cred_id{owner_filter}",
             {"cred_id": ensure_record_id(self.id)},
         )
         return [Model(**row) for row in results]
@@ -165,7 +174,7 @@ class Credential(ObjectModel):
                     secret_value = self.api_key.get_secret_value()
                     data["api_key"] = encrypt_value(secret_value)
                 else:
-                    data["api_key"] = None
+                    data["api_key"] = ""
             elif value is not None or key in self.__class__.nullable_fields:
                 data[key] = value
 

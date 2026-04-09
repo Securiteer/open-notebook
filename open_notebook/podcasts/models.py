@@ -147,9 +147,7 @@ class SpeakerProfile(ObjectModel):
     tts_model: Optional[str] = Field(None, description="[Legacy] TTS model name")
 
     # New field: Model registry reference
-    voice_model: Optional[str] = Field(
-        None, description="Model record ID for TTS"
-    )
+    voice_model: Optional[str] = Field(None, description="Model record ID for TTS")
 
     speakers: List[Dict[str, Any]] = Field(
         ..., description="Array of speaker configurations"
@@ -191,8 +189,14 @@ class SpeakerProfile(ObjectModel):
     @classmethod
     async def get_by_name(cls, name: str) -> Optional["SpeakerProfile"]:
         """Get speaker profile by name"""
+        from open_notebook.domain.user_context import get_current_user_id
+
+        user_id = get_current_user_id()
+        owner_filter = f" AND owner = '{user_id}'" if user_id else ""
+
         result = await repo_query(
-            "SELECT * FROM speaker_profile WHERE name = $name", {"name": name}
+            f"SELECT * FROM speaker_profile WHERE name = $name{owner_filter}",
+            {"name": name},
         )
         if result:
             return cls(**result[0])
