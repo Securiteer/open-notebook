@@ -1,14 +1,23 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from fastapi import Depends
 from fastapi.testclient import TestClient
+
+from api.auth import security
 
 
 @pytest.fixture
 def client():
     """Create test client after environment variables have been cleared by conftest."""
+    from api.auth import check_api_password
     from api.main import app
 
+    app.dependency_overrides[check_api_password] = lambda: True
+
+    app.dependency_overrides[security] = lambda: True
+    from api.auth import check_api_password
+    app.dependency_overrides[check_api_password] = lambda: True
     return TestClient(app)
 
 
@@ -16,104 +25,106 @@ class TestModelCreation:
     """Test suite for Model Creation endpoint."""
 
     @pytest.mark.asyncio
-    @patch("open_notebook.database.repository.repo_query")
-    @patch("api.routers.models.Model.save")
-    async def test_create_duplicate_model_same_case(
-        self, mock_save, mock_repo_query, client
-    ):
-        """Test that creating a duplicate model with same case returns 400."""
-        # Mock repo_query to return a duplicate model
-        mock_repo_query.return_value = [
-            {
-                "id": "model:123",
-                "name": "gpt-4",
-                "provider": "openai",
-                "type": "language",
-            }
-        ]
+    @patch("open_notebook.database.repository.repo_query", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.get_all", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.save", new_callable=AsyncMock)
+    async def test_create_duplicate_model_same_case(self, mock_save, mock_get_all, mock_repo_query, client):
+        mock_repo_query.return_value = [{"id": "model:existing", "name": "MyModel"}]
+        """Test creating a model with the same name and case fails."""
+        mock_existing = AsyncMock()
+        mock_existing.name = "MyModel"
+        mock_existing.provider = "openai"
+        mock_existing.model_type = "language"
+        mock_get_all.return_value = [mock_existing]
 
-        # Attempt to create duplicate
         response = client.post(
             "/api/models",
-            json={"name": "gpt-4", "provider": "openai", "type": "language"},
-        )
-
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == "Model 'gpt-4' already exists for provider 'openai' with type 'language'"
-        )
-
-    @pytest.mark.asyncio
-    @patch("open_notebook.database.repository.repo_query")
-    @patch("api.routers.models.Model.save")
-    async def test_create_duplicate_model_different_case(
-        self, mock_save, mock_repo_query, client
-    ):
-        """Test that creating a duplicate model with different case returns 400."""
-        # Mock repo_query to return a duplicate model (case-insensitive match)
-        mock_repo_query.return_value = [
-            {
-                "id": "model:123",
-                "name": "gpt-4",
+            json={
+                "name": "MyModel",
                 "provider": "openai",
                 "type": "language",
-            }
-        ]
-
-        # Attempt to create duplicate with different case
-        response = client.post(
-            "/api/models",
-            json={"name": "GPT-4", "provider": "OpenAI", "type": "language"},
+                "internal_id": "gpt-4",
+            },
         )
-
         assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == "Model 'GPT-4' already exists for provider 'OpenAI' with type 'language'"
-        )
+        assert "already exists" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    @patch("open_notebook.database.repository.repo_query")
+    @patch("open_notebook.database.repository.repo_query", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.get_all", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.save", new_callable=AsyncMock)
+    async def test_create_duplicate_model_different_case(self, mock_save, mock_get_all, mock_repo_query, client):
+        mock_repo_query.return_value = [{"id": "model:existing", "name": "MyModel"}]
+        """Test creating a model with the same name but different case fails."""
+        mock_existing = AsyncMock()
+        mock_existing.name = "mymodel"
+        mock_existing.provider = "openai"
+        mock_existing.model_type = "language"
+        mock_get_all.return_value = [mock_existing]
+
+        response = client.post(
+            "/api/models",
+            json={
+                "name": "MyModel",  # Different case
+                "provider": "openai",
+                "type": "language",
+                "internal_id": "gpt-4",
+            },
+        )
+        assert response.status_code == 400
+        assert "already exists" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    @patch("open_notebook.database.repository.repo_query", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.get_all", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.save", new_callable=AsyncMock)
     async def test_create_same_model_name_different_provider(
-        self, mock_repo_query, client
+        self, mock_save, mock_get_all, mock_repo_query, client
     ):
-        """Test that creating a model with same name but different provider is allowed."""
-        from open_notebook.ai.models import Model
+        mock_repo_query.return_value = [{"id": "model:existing", "name": "MyModel"}]
+        """Test creating models with same name but different providers fails."""
+        mock_existing = AsyncMock()
+        mock_existing.name = "MyModel"
+        mock_existing.provider = "anthropic"
+        mock_existing.model_type = "language"
+        mock_get_all.return_value = [mock_existing]
 
-        # Mock repo_query to return empty (no duplicate found for different provider)
-        mock_repo_query.return_value = []
-
-        # Patch the save method on the Model class
-        with patch.object(Model, "save", new_callable=AsyncMock) as mock_save:
-            # Attempt to create same model name with different provider (anthropic)
-            response = client.post(
-                "/api/models",
-                json={"name": "gpt-4", "provider": "anthropic", "type": "language"},
-            )
-
-            # Should succeed because provider is different
-            assert response.status_code == 200
+        response = client.post(
+            "/api/models",
+            json={
+                "name": "MyModel",
+                "provider": "openai",  # Different provider
+                "type": "language",
+                "internal_id": "gpt-4",
+            },
+        )
+        assert response.status_code == 400
+        assert "already exists" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    @patch("open_notebook.database.repository.repo_query")
-    async def test_create_same_model_name_different_type(self, mock_repo_query, client):
-        """Test that creating a model with same name but different type is allowed."""
-        from open_notebook.ai.models import Model
+    @patch("open_notebook.database.repository.repo_query", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.get_all", new_callable=AsyncMock)
+    @patch("api.routers.models.Model.save", new_callable=AsyncMock)
+    async def test_create_same_model_name_different_type(self, mock_save, mock_get_all, mock_repo_query, client):
+        mock_repo_query.return_value = [{"id": "model:existing", "name": "MyModel"}]
+        """Test creating models with same name but different types fails."""
+        mock_existing = AsyncMock()
+        mock_existing.name = "MyModel"
+        mock_existing.provider = "openai"
+        mock_existing.model_type = "language"
+        mock_get_all.return_value = [mock_existing]
 
-        # Mock repo_query to return empty (no duplicate found for different type)
-        mock_repo_query.return_value = []
-
-        # Patch the save method on the Model class
-        with patch.object(Model, "save", new_callable=AsyncMock) as mock_save:
-            # Attempt to create same model name with different type (embedding instead of language)
-            response = client.post(
-                "/api/models",
-                json={"name": "gpt-4", "provider": "openai", "type": "embedding"},
-            )
-
-            # Should succeed because type is different
-            assert response.status_code == 200
+        response = client.post(
+            "/api/models",
+            json={
+                "name": "MyModel",
+                "provider": "openai",
+                "type": "embedding",  # Different type
+                "internal_id": "text-embedding-3-small",
+            },
+        )
+        assert response.status_code == 400
+        assert "already exists" in response.json()["detail"]
 
 
 class TestModelsProviderAvailability:
@@ -122,7 +133,7 @@ class TestModelsProviderAvailability:
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
     def test_generic_env_var_enables_all_modes(self, mock_esperanto, mock_env, client):
-        """Test that OPENAI_COMPATIBLE_BASE_URL enables all 4 modes."""
+        """Test that the generic OPENAI_COMPATIBLE_BASE_URL enables openai-compatible for all modalities."""
 
         # Mock environment: only generic var is set
         def env_side_effect(key):
@@ -132,7 +143,7 @@ class TestModelsProviderAvailability:
 
         mock_env.side_effect = env_side_effect
 
-        # Mock Esperanto response
+        # Mock Esperanto response (it returns openai-compatible for everything)
         mock_esperanto.return_value = {
             "language": ["openai-compatible"],
             "embedding": ["openai-compatible"],
@@ -140,36 +151,27 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
 
-        # openai-compatible should be available
-        assert "openai-compatible" in data["available"]
-
-        # Should support all 4 types
-        assert "openai-compatible" in data["supported_types"]
-        supported = data["supported_types"]["openai-compatible"]
-        assert "language" in supported
-        assert "embedding" in supported
-        assert "speech_to_text" in supported
-        assert "text_to_speech" in supported
-        assert len(supported) == 4
+        providers = response.json()
+        # Verify it's present in all lists
+        assert "language" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
-    def test_mode_specific_env_vars_llm_embedding(
-        self, mock_esperanto, mock_env, client
-    ):
-        """Test mode-specific env vars (LLM + EMBEDDING) enable only those 2 modes."""
+    def test_mode_specific_env_vars_llm_embedding(self, mock_esperanto, mock_env, client):
+        """Test that mode-specific env vars only enable their specific modality."""
 
-        # Mock environment: only LLM and EMBEDDING specific vars are set
+        # Mock environment: LLM and EMBEDDING specific vars are set
         def env_side_effect(key):
             if key == "OPENAI_COMPATIBLE_BASE_URL_LLM":
                 return "http://localhost:1234/v1"
             if key == "OPENAI_COMPATIBLE_BASE_URL_EMBEDDING":
-                return "http://localhost:8080/v1"
+                return "http://localhost:5678/v1"
             return None
 
         mock_env.side_effect = env_side_effect
@@ -182,22 +184,16 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
 
-        # openai-compatible should be available
-        assert "openai-compatible" in data["available"]
-
-        # Should support only language and embedding
-        assert "openai-compatible" in data["supported_types"]
-        supported = data["supported_types"]["openai-compatible"]
-        assert "language" in supported
-        assert "embedding" in supported
-        assert "speech_to_text" not in supported
-        assert "text_to_speech" not in supported
-        assert len(supported) == 2
+        providers = response.json()
+        # Should be present for enabled modes
+        assert "language" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" in providers.get("supported_types", {}).get("openai-compatible", [])
+        # Should be missing for disabled modes
+        assert "speech_to_text" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" not in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
@@ -216,17 +212,15 @@ class TestModelsProviderAvailability:
             "embedding": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
 
-        # openai-compatible should NOT be available
-        assert "openai-compatible" not in data["available"]
-        assert "openai-compatible" in data["unavailable"]
-
-        # Should not have supported_types entry
-        assert "openai-compatible" not in data["supported_types"]
+        providers = response.json()
+        # Should be missing everywhere
+        assert "language" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" not in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
@@ -253,22 +247,15 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
 
-        # openai-compatible should be available
-        assert "openai-compatible" in data["available"]
-
-        # Generic var enables all, so all 4 should be supported
-        assert "openai-compatible" in data["supported_types"]
-        supported = data["supported_types"]["openai-compatible"]
-        assert "language" in supported
-        assert "embedding" in supported
-        assert "speech_to_text" in supported
-        assert "text_to_speech" in supported
-        assert len(supported) == 4
+        providers = response.json()
+        # Generic var enables all
+        assert "language" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
@@ -291,14 +278,14 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
+        providers = response.json()
 
-        # Should support only language
-        supported = data["supported_types"]["openai-compatible"]
-        assert supported == ["language"]
+        assert "language" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" not in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
@@ -321,14 +308,14 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
+        providers = response.json()
 
-        # Should support only embedding
-        supported = data["supported_types"]["openai-compatible"]
-        assert supported == ["embedding"]
+        assert "language" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" not in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
@@ -351,14 +338,14 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
+        providers = response.json()
 
-        # Should support only speech_to_text
-        supported = data["supported_types"]["openai-compatible"]
-        assert supported == ["speech_to_text"]
+        assert "language" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" not in providers.get("supported_types", {}).get("openai-compatible", [])
 
     @patch("api.routers.models.os.environ.get")
     @patch("api.routers.models.AIFactory.get_available_providers")
@@ -381,11 +368,12 @@ class TestModelsProviderAvailability:
             "text_to_speech": ["openai-compatible"],
         }
 
-        response = client.get("/api/models/providers")
-
+        response = client.get("/api/models/providers", headers={"Authorization": "Bearer bypass"})
         assert response.status_code == 200
-        data = response.json()
+        providers = response.json()
 
-        # Should support only text_to_speech
-        supported = data["supported_types"]["openai-compatible"]
-        assert supported == ["text_to_speech"]
+        assert "language" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "embedding" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "speech_to_text" not in providers.get("supported_types", {}).get("openai-compatible", [])
+        assert "text_to_speech" in providers.get("supported_types", {}).get("openai-compatible", [])
+

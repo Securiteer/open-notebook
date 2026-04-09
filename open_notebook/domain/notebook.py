@@ -450,9 +450,7 @@ class Source(ObjectModel):
         except ValueError:
             raise
         except Exception as e:
-            logger.error(
-                f"Failed to submit embed_source job for source {self.id}: {e}"
-            )
+            logger.error(f"Failed to submit embed_source job for source {self.id}: {e}")
             logger.exception(e)
             raise DatabaseOperationError(e)
 
@@ -633,10 +631,15 @@ async def text_search(
     if not keyword:
         raise InvalidInputError("Search keyword cannot be empty")
     try:
+        from open_notebook.domain.user_context import get_current_user_id
+
+        user_id = get_current_user_id()
+        owner_filter = f" WHERE owner = '{user_id}'" if user_id else ""
+
         search_results = await repo_query(
-            """
+            f"""
             select *
-            from fn::text_search($keyword, $results, $source, $note)
+            from fn::text_search($keyword, $results, $source, $note){owner_filter}
             """,
             {"keyword": keyword, "results": results, "source": source, "note": note},
         )
@@ -657,13 +660,17 @@ async def vector_search(
     if not keyword:
         raise InvalidInputError("Search keyword cannot be empty")
     try:
+        # Use unified embedding function (handles chunking if query is very long)
+        from open_notebook.domain.user_context import get_current_user_id
         from open_notebook.utils.embedding import generate_embedding
 
-        # Use unified embedding function (handles chunking if query is very long)
+        user_id = get_current_user_id()
+        owner_filter = f" WHERE owner = '{user_id}'" if user_id else ""
+
         embed = await generate_embedding(keyword)
         search_results = await repo_query(
-            """
-            SELECT * FROM fn::vector_search($embed, $results, $source, $note, $minimum_score);
+            f"""
+            SELECT * FROM fn::vector_search($embed, $results, $source, $note, $minimum_score){owner_filter};
             """,
             {
                 "embed": embed,
