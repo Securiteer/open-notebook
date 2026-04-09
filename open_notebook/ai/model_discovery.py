@@ -14,8 +14,8 @@ import httpx
 from loguru import logger
 
 from open_notebook.ai.models import Model
-from open_notebook.domain.credential import Credential
 from open_notebook.database.repository import repo_query
+from open_notebook.domain.credential import Credential
 
 
 @dataclass
@@ -653,7 +653,9 @@ async def discover_openai_compatible_models() -> List[DiscoveredModel]:
                         )
                     )
     except httpx.HTTPStatusError as e:
-        logger.warning(f"Failed to discover openai_compatible models: HTTP {e.response.status_code}")
+        logger.warning(
+            f"Failed to discover openai_compatible models: HTTP {e.response.status_code}"
+        )
     except Exception as e:
         logger.warning(f"Failed to discover openai_compatible models: {e}")
 
@@ -765,7 +767,9 @@ async def sync_provider_models(
             )
             await new_model.save()
             new_count += 1
-            logger.info(f"Registered new model: {model.provider}/{model.name} ({model.model_type})")
+            logger.info(
+                f"Registered new model: {model.provider}/{model.name} ({model.model_type})"
+            )
         except Exception as e:
             logger.warning(f"Failed to register model {model.name}: {e}")
 
