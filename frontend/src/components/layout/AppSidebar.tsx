@@ -30,7 +30,7 @@ import { Separator } from '@/components/ui/separator'
 import {
   Book,
   Search,
-  Mic,
+  Mic, Video,
   Bot,
   Shuffle,
   Settings,
@@ -61,6 +61,7 @@ const getNavigation = (t: TranslationKeys) => [
     title: t.navigation.create,
     items: [
       { name: t.navigation.podcasts, href: '/podcasts', icon: Mic },
+      { name: 'Simple Video', href: '/simple-video', icon: Video },
     ],
   },
   {
