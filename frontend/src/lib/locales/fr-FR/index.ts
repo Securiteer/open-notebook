@@ -208,6 +208,7 @@ export const frFR = {
     podcasts: "Podcasts",
     models: "Modèles",
     transformations: "Transformations",
+    news: "News",
     transformation: "Transformation",
     settings: "Paramètres",
     advanced: "Avancé",
