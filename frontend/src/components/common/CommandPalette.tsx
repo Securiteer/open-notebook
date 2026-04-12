@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/command'
 import {
   Book,
+  Newspaper,
   Code2,
   TrendingUp,
   Search,
@@ -40,6 +41,7 @@ const getNavigationItems = (t: TranslationKeys) => [
   Code2,
   TrendingUp, keywords: ['notes', 'research', 'projects'] },
   { name: t.navigation.askAndSearch, href: '/search', icon: Search, keywords: ['find', 'query'] },
+  { name: t.navigation.news, href: '/news', icon: Newspaper, keywords: ['news', 'articles', 'updates'] },
   { name: t.navigation.podcasts, href: '/podcasts', icon: Mic, keywords: ['audio', 'episodes', 'generate'] },
   { name: t.navigation.models, href: '/settings/api-keys', icon: Bot, keywords: ['ai', 'llm', 'providers', 'openai', 'anthropic'] },
   { name: t.navigation.transformations, href: '/transformations', icon: Shuffle, keywords: ['prompts', 'templates', 'actions'] },

@@ -208,6 +208,7 @@ export const itIT = {
     podcasts: "Podcast",
     models: "Modelli",
     transformations: "Trasformazioni",
+    news: "News",
     transformation: "Trasformazione",
     settings: "Impostazioni",
     advanced: "Avanzate",

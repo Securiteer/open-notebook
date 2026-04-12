@@ -289,6 +289,9 @@ app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(source_chat.router, prefix="/api", tags=["source-chat"])
 app.include_router(credentials.router, prefix="/api", tags=["credentials"])
 app.include_router(languages.router, prefix="/api", tags=["languages"])
+from api.routers import news
+
+app.include_router(news.router, prefix="/api", tags=["news"])
 app.include_router(openclaw.router, prefix="/api", tags=["openclaw"])
 
 
