@@ -33,7 +33,7 @@ import {
   Code2,
   TrendingUp,
   Search,
-  Mic,
+  Mic, Video,
   Bot,
   Shuffle,
   Settings,
@@ -68,6 +68,7 @@ const getNavigation = (t: TranslationKeys) => [
       { name: "DeepTutor", href: "/deeptutor", icon: Book },
       { name: "DeepTutor", href: "/deeptutor", icon: Book },
       { name: t.navigation.podcasts, href: '/podcasts', icon: Mic },
+      { name: 'Simple Video', href: '/simple-video', icon: Video },
     ],
   },
   {

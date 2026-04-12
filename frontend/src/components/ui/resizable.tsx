@@ -9,6 +9,9 @@ import { cn } from '@/lib/utils'
 function ResizablePanelGroup({
   className,
   ...props
+}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) {
+  return (
+    <ResizablePrimitive.PanelGroup
 }: React.ComponentProps<any>) {
   const Group = (ResizablePrimitive as any).PanelGroup || (ResizablePrimitive as any).default?.PanelGroup || (ResizablePrimitive as any)
   return (
@@ -25,6 +28,8 @@ function ResizablePanelGroup({
 
 function ResizablePanel({
   ...props
+}: React.ComponentProps<typeof ResizablePrimitive.Panel>) {
+  return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />
 }: React.ComponentProps<any>) {
   const Panel = (ResizablePrimitive as any).Panel || (ResizablePrimitive as any).default?.Panel
   return <Panel data-slot="resizable-panel" {...props} />
@@ -34,6 +39,11 @@ function ResizableHandle({
   withHandle,
   className,
   ...props
+}: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
+  withHandle?: boolean
+}) {
+  return (
+    <ResizablePrimitive.PanelResizeHandle
 }: React.ComponentProps<any>) {
   const Handle = (ResizablePrimitive as any).PanelResizeHandle || (ResizablePrimitive as any).default?.PanelResizeHandle
   return (
@@ -50,6 +60,7 @@ function ResizableHandle({
           <GripVerticalIcon className="size-2.5" />
         </div>
       )}
+    </ResizablePrimitive.PanelResizeHandle>
     </Handle>
   )
 }

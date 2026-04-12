@@ -31,6 +31,7 @@ export function AgentDashboardMockup() {
     },
   }
 
+  const panelVariants = {
   const panelVariants: any = {
     hidden: {
       opacity: 0,
