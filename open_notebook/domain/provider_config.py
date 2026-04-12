@@ -10,7 +10,7 @@ is set. If not set, keys are stored as plain text with a warning logged.
 """
 
 from datetime import datetime
-from typing import ClassVar, Dict, List, Optional, Any
+from typing import Any, ClassVar, Dict, List, Optional
 
 from pydantic import Field, SecretStr, field_validator
 

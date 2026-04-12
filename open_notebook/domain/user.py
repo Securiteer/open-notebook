@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import ClassVar, Optional
+
 from pydantic import Field
+
 from open_notebook.domain.base import ObjectModel
 
 

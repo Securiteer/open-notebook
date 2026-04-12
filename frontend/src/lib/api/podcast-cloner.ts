@@ -27,10 +27,12 @@ export interface JobStatusResponse {
 
 export const podcastClonerApi = {
   submitJob: async (request: PodcastClonerRequest): Promise<PodcastClonerResponse> => {
-    return await apiClient.post<PodcastClonerResponse>('/podcast-cloner/submit', request);
+    const response = await apiClient.post<PodcastClonerResponse>('/podcast-cloner/submit', request);
+    return response.data;
   },
 
   getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
-    return await apiClient.get<JobStatusResponse>(`/podcast-cloner/jobs/${jobId}`);
+    const response = await apiClient.get<JobStatusResponse>(`/podcast-cloner/jobs/${jobId}`);
+    return response.data;
   },
 };

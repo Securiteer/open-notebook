@@ -128,11 +128,3 @@ async def get_auth_status():
     Check if authentication is enabled.
     """
     return {"auth_enabled": True, "message": "Authentication is required"}
-    auth_enabled = bool(get_secret_from_env("OPEN_NOTEBOOK_PASSWORD"))
-
-    return {
-        "auth_enabled": auth_enabled,
-        "message": "Authentication is required"
-        if auth_enabled
-        else "Authentication is disabled",
-    }
