@@ -1,0 +1,1 @@
+REMOVE FIELD owner ON TABLE speaker_profile;

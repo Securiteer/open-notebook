@@ -445,12 +445,8 @@ class SetApiKeyRequest(BaseModel):
     base_url: Optional[str] = Field(
         None, description="Base URL for URL-based providers (Ollama, OpenAI-compatible)"
     )
-    endpoint: Optional[str] = Field(
-        None, description="Endpoint URL for Azure OpenAI"
-    )
-    api_version: Optional[str] = Field(
-        None, description="API version for Azure OpenAI"
-    )
+    endpoint: Optional[str] = Field(None, description="Endpoint URL for Azure OpenAI")
+    api_version: Optional[str] = Field(None, description="API version for Azure OpenAI")
     endpoint_llm: Optional[str] = Field(
         None, description="Service-specific endpoint for LLM (Azure)"
     )
@@ -694,3 +690,29 @@ class NewsArticleResponse(BaseModel):
     published_date: Optional[str] = None
     likes: int = 0
     dislikes: int = 0
+
+# Skill Models
+class SkillBase(BaseModel):
+    name: str
+    description: str
+    author: str = "Community"
+    version: str = "1.0.0"
+    instructions: str = ""
+    content: str
+
+
+class SkillCreate(SkillBase):
+    pass
+
+
+class SkillResponse(SkillBase):
+    id: str
+    rating: float
+    rating_count: int
+    created: str
+    updated: str
+    is_installed: bool = False
+
+
+class SkillRateRequest(BaseModel):
+    rating: float = Field(..., ge=1, le=5)

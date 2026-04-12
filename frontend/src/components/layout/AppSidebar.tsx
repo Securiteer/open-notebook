@@ -30,6 +30,8 @@ import { Separator } from '@/components/ui/separator'
 import {
   Book,
   Newspaper,
+  Code2,
+  TrendingUp,
   Search,
   Mic,
   Bot,

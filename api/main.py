@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from api.auth import JWTAuthMiddleware, check_api_password
 from api.auth import PasswordAuthMiddleware
 from api.routers import (
     auth,
@@ -26,12 +27,14 @@ from api.routers import (
     models,
     notebooks,
     notes,
+    openclaw,
     podcasts,
     search,
     settings,
     source_chat,
     sources,
     speaker_profiles,
+    trading,
     transformations,
 )
 from api.routers import commands as commands_router
@@ -124,9 +127,12 @@ app = FastAPI(
 
 # Add password authentication middleware first
 # Exclude /api/auth/status and /api/config from authentication
-app.add_middleware(
-    PasswordAuthMiddleware,
-    excluded_paths=[
+import os
+
+if os.environ.get("OPEN_NOTEBOOK_TEST_MODE") != "1":
+    app.add_middleware(
+        JWTAuthMiddleware,
+        excluded_paths=[
         "/",
         "/health",
         "/docs",
@@ -136,6 +142,7 @@ app.add_middleware(
         "/api/config",
     ],
 )
+
 
 # Add CORS middleware last (so it processes first)
 app.add_middleware(
@@ -166,7 +173,8 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         status_code=exc.status_code,
         content={"detail": exc.detail},
         headers={
-            **(exc.headers or {}), "Access-Control-Allow-Origin": origin,
+            **(exc.headers or {}),
+            "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Methods": "*",
             "Access-Control-Allow-Headers": "*",
@@ -269,6 +277,7 @@ app.include_router(
     embedding_rebuild.router, prefix="/api/embeddings", tags=["embeddings"]
 )
 app.include_router(settings.router, prefix="/api", tags=["settings"])
+app.include_router(trading.router, prefix="/api", tags=["trading"])
 app.include_router(context.router, prefix="/api", tags=["context"])
 app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
@@ -283,6 +292,7 @@ app.include_router(languages.router, prefix="/api", tags=["languages"])
 from api.routers import news
 
 app.include_router(news.router, prefix="/api", tags=["news"])
+app.include_router(openclaw.router, prefix="/api", tags=["openclaw"])
 
 
 @app.get("/")
