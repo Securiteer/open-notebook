@@ -208,6 +208,7 @@ export const ruRU = {
     podcasts: "Подкасты",
     models: "Модели",
     transformations: "Трансформации",
+    multica: "Multica",
     news: "News",
     transformation: "Трансформация",
     settings: "Настройки",
