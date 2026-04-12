@@ -208,6 +208,7 @@ export const frFR = {
     podcasts: "Podcasts",
     models: "Modèles",
     transformations: "Transformations",
+    multica: "Multica",
     news: "News",
     transformation: "Transformation",
     settings: "Paramètres",
