@@ -64,6 +64,9 @@ const getNavigation = (t: TranslationKeys) => [
   {
     title: t.navigation.create,
     items: [
+      { name: "DeepTutor", href: "/deeptutor", icon: Book },
+      { name: "DeepTutor", href: "/deeptutor", icon: Book },
+      { name: "DeepTutor", href: "/deeptutor", icon: Book },
       { name: t.navigation.podcasts, href: '/podcasts', icon: Mic },
       { name: 'Simple Video', href: '/simple-video', icon: Video },
     ],
@@ -191,7 +194,7 @@ export function AppSidebar() {
                       </Button>
                     </DropdownMenuTrigger>
                   </TooltipTrigger>
-                   <TooltipContent side="right">{t.common.create}</TooltipContent>
+                  <TooltipContent side="right">{t.common.create}</TooltipContent>
                 </Tooltip>
               ) : (
                 <DropdownMenuTrigger asChild>
@@ -282,7 +285,7 @@ export function AppSidebar() {
                             {button}
                           </Link>
                         </TooltipTrigger>
-                        <TooltipContent side="right">{item.name}</TooltipContent>
+                       <TooltipContent side="right">{item.name}</TooltipContent>
                       </Tooltip>
                     )
                   }
@@ -336,7 +339,7 @@ export function AppSidebar() {
                       <ThemeToggle iconOnly />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{t.common.theme}</TooltipContent>
+                 <TooltipContent side="right">{t.common.theme}</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -344,7 +347,7 @@ export function AppSidebar() {
                       <LanguageToggle iconOnly />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{t.common.language}</TooltipContent>
+                 <TooltipContent side="right">{t.common.language}</TooltipContent>
                 </Tooltip>
               </>
             ) : (
@@ -367,7 +370,7 @@ export function AppSidebar() {
                   <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-               <TooltipContent side="right">{t.common.signOut}</TooltipContent>
+              <TooltipContent side="right">{t.common.signOut}</TooltipContent>
             </Tooltip>
           ) : (
             <Button

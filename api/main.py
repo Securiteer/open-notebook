@@ -12,12 +12,14 @@ from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.auth import JWTAuthMiddleware, PasswordAuthMiddleware, check_api_password
+from api.auth import JWTAuthMiddleware, check_api_password
 from api.routers import (
     auth,
     chat,
     config,
     context,
     credentials,
+    deeptutor,
     embedding,
     embedding_rebuild,
     episode_profiles,
@@ -295,6 +297,7 @@ from api.routers import news
 app.include_router(news.router, prefix="/api", tags=["news"])
 app.include_router(openclaw.router, prefix="/api", tags=["openclaw"])
 app.include_router(simple_video.router, prefix="/api", tags=["simple-video"])
+app.include_router(deeptutor.router, prefix="/api", tags=["deeptutor"])
 
 
 @app.get("/")

@@ -36,6 +36,7 @@ export function DashboardMockup() {
   }
 
   const panelVariants = {
+  const panelVariants: any = {
     hidden: {
       opacity: 0,
       x: 100,

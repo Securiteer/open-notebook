@@ -32,5 +32,12 @@ export const podcastClonerApi = {
 
   getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
     return await apiClient.get<JobStatusResponse>(`/podcast-cloner/jobs/${jobId}`);
+    const response = await apiClient.post<PodcastClonerResponse>('/podcast-cloner/submit', request);
+    return response.data;
+  },
+
+  getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
+    const response = await apiClient.get<JobStatusResponse>(`/podcast-cloner/jobs/${jobId}`);
+    return response.data;
   },
 };
