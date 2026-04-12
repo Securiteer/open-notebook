@@ -208,6 +208,7 @@ export const zhCN = {
     podcasts: "播客",
     models: "模型",
     transformations: "转换",
+    multica: "Multica",
     news: "News",
     transformation: "转换",
     settings: "设置",

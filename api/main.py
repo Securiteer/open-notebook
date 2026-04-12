@@ -14,6 +14,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from api.auth import JWTAuthMiddleware, check_api_password
 from api.auth import PasswordAuthMiddleware
 from api.routers import (
+    multica,
     auth,
     chat,
     config,
@@ -266,6 +267,7 @@ async def open_notebook_error_handler(request: Request, exc: OpenNotebookError):
 
 
 # Include routers
+app.include_router(multica.router, prefix="/api", tags=["multica"])
 app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(config.router, prefix="/api", tags=["config"])
 app.include_router(notebooks.router, prefix="/api", tags=["notebooks"])
