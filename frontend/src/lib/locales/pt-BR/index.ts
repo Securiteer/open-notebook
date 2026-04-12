@@ -208,6 +208,8 @@ export const ptBR = {
     podcasts: "Podcasts",
     models: "Modelos",
     transformations: "Transformações",
+    multica: "Multica",
+    news: "News",
     transformation: "Transformação",
     settings: "Configurações",
     advanced: "Avançado",

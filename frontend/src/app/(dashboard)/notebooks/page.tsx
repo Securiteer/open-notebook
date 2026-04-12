@@ -75,10 +75,10 @@ export default function NotebooksPage() {
             </Button>
           </div>
         </div>
-        
+
         <div className="space-y-8">
-          <NotebookList 
-            notebooks={filteredActive} 
+          <NotebookList
+            notebooks={filteredActive}
             isLoading={isLoading}
             title={t.notebooks.activeNotebooks}
             emptyTitle={isSearching ? t.common.noMatches : undefined}
@@ -86,10 +86,10 @@ export default function NotebooksPage() {
             onAction={!isSearching ? () => setCreateDialogOpen(true) : undefined}
             actionLabel={!isSearching ? t.notebooks.newNotebook : undefined}
           />
-          
+
           {hasArchived && (
-            <NotebookList 
-              notebooks={filteredArchived} 
+            <NotebookList
+              notebooks={filteredArchived}
               isLoading={false}
               title={t.notebooks.archivedNotebooks}
               collapsible

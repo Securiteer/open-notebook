@@ -29,6 +29,9 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { Separator } from '@/components/ui/separator'
 import {
   Book,
+  Newspaper,
+  Code2,
+  TrendingUp,
   Search,
   Mic, Video,
   Bot,
@@ -55,6 +58,7 @@ const getNavigation = (t: TranslationKeys) => [
     items: [
       { name: t.navigation.notebooks, href: '/notebooks', icon: Book },
       { name: t.navigation.askAndSearch, href: '/search', icon: Search },
+      { name: t.navigation.news, href: '/news', icon: Newspaper },
     ],
   },
   {
@@ -68,6 +72,7 @@ const getNavigation = (t: TranslationKeys) => [
     title: t.navigation.manage,
     items: [
       { name: t.navigation.models, href: '/settings/api-keys', icon: Bot },
+      { name: t.navigation.multica, href: '/multica', icon: Bot },
       { name: t.navigation.transformations, href: '/transformations', icon: Shuffle },
       { name: t.navigation.settings, href: '/settings', icon: Settings },
       { name: t.navigation.advanced, href: '/advanced', icon: Wrench },

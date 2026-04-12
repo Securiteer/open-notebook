@@ -226,11 +226,12 @@ async def test_provider_connection(
             test_base_url = base_url or os.environ.get(
                 "OLLAMA_API_BASE", "http://localhost:11434"
             )
+            test_base_url = str(base_url or os.environ.get("OLLAMA_API_BASE", "http://localhost:11434"))
             return await _test_ollama_connection(test_base_url)
 
         if normalized_provider == "openai_compatible":
             # Use base_url from specific config, or environment variable
-            test_base_url = base_url or os.environ.get("OPENAI_COMPATIBLE_BASE_URL")
+            test_base_url = str(base_url or os.environ.get("OPENAI_COMPATIBLE_BASE_URL", ""))
             test_api_key = api_key or os.environ.get("OPENAI_COMPATIBLE_API_KEY")
             if not test_base_url:
                 return False, "No base URL configured for OpenAI-compatible provider"
@@ -255,6 +256,7 @@ async def test_provider_connection(
                 test_base_url = base_url or os.environ.get(
                     "OPENAI_COMPATIBLE_BASE_URL", ""
                 )
+                test_base_url = str(base_url or os.environ.get("OPENAI_COMPATIBLE_BASE_URL", ""))
                 test_api_key = api_key or os.environ.get("OPENAI_COMPATIBLE_API_KEY")
                 return await _test_openai_compatible_connection(
                     test_base_url, test_api_key

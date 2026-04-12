@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from api.auth import PasswordAuthMiddleware
+from api.auth import JWTAuthMiddleware, PasswordAuthMiddleware, check_api_password
 from api.routers import (
     auth,
     chat,
@@ -27,13 +27,14 @@ from api.routers import (
     notebooks,
     notes,
     openclaw,
+    podcast_cloner,
     podcasts,
     search,
     settings,
-    simple_video,
     source_chat,
     sources,
     speaker_profiles,
+    trading,
     transformations,
 )
 from api.routers import commands as commands_router
@@ -126,9 +127,12 @@ app = FastAPI(
 
 # Add password authentication middleware first
 # Exclude /api/auth/status and /api/config from authentication
-app.add_middleware(
-    PasswordAuthMiddleware,
-    excluded_paths=[
+import os
+
+if os.environ.get("OPEN_NOTEBOOK_TEST_MODE") != "1":
+    app.add_middleware(
+        JWTAuthMiddleware,
+        excluded_paths=[
         "/",
         "/health",
         "/docs",
@@ -138,6 +142,7 @@ app.add_middleware(
         "/api/config",
     ],
 )
+
 
 # Add CORS middleware last (so it processes first)
 app.add_middleware(
@@ -272,17 +277,22 @@ app.include_router(
     embedding_rebuild.router, prefix="/api/embeddings", tags=["embeddings"]
 )
 app.include_router(settings.router, prefix="/api", tags=["settings"])
+app.include_router(trading.router, prefix="/api", tags=["trading"])
 app.include_router(context.router, prefix="/api", tags=["context"])
 app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
 app.include_router(commands_router.router, prefix="/api", tags=["commands"])
 app.include_router(podcasts.router, prefix="/api", tags=["podcasts"])
+app.include_router(podcast_cloner.router, prefix="/api", tags=["podcast-cloner"])
 app.include_router(episode_profiles.router, prefix="/api", tags=["episode-profiles"])
 app.include_router(speaker_profiles.router, prefix="/api", tags=["speaker-profiles"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(source_chat.router, prefix="/api", tags=["source-chat"])
 app.include_router(credentials.router, prefix="/api", tags=["credentials"])
 app.include_router(languages.router, prefix="/api", tags=["languages"])
+from api.routers import news
+
+app.include_router(news.router, prefix="/api", tags=["news"])
 app.include_router(openclaw.router, prefix="/api", tags=["openclaw"])
 app.include_router(simple_video.router, prefix="/api", tags=["simple-video"])
 
