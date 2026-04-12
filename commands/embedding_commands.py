@@ -126,10 +126,7 @@ class EmbedSourceOutput(CommandOutput):
         "wait_strategy": "exponential_jitter",
         "wait_min": 1,
         "wait_max": 60,
-        "stop_on": [
-            ValueError,
-            ConfigurationError,
-        ],  # Don't retry validation/config errors
+        "stop_on": [ValueError, ConfigurationError],  # Don't retry validation/config errors
         "retry_log_level": "debug",
     },
 )
@@ -221,10 +218,7 @@ async def embed_note_command(input_data: EmbedNoteInput) -> EmbedNoteOutput:
         "wait_strategy": "exponential_jitter",
         "wait_min": 1,
         "wait_max": 60,
-        "stop_on": [
-            ValueError,
-            ConfigurationError,
-        ],  # Don't retry validation/config errors
+        "stop_on": [ValueError, ConfigurationError],  # Don't retry validation/config errors
         "retry_log_level": "debug",
     },
 )
@@ -318,10 +312,7 @@ async def embed_insight_command(input_data: EmbedInsightInput) -> EmbedInsightOu
         "wait_strategy": "exponential_jitter",
         "wait_min": 1,
         "wait_max": 60,
-        "stop_on": [
-            ValueError,
-            ConfigurationError,
-        ],  # Don't retry validation/config errors
+        "stop_on": [ValueError, ConfigurationError],  # Don't retry validation/config errors
         "retry_log_level": "debug",
     },
 )
@@ -380,7 +371,7 @@ async def embed_source_command(input_data: EmbedSourceInput) -> EmbedSourceOutpu
             f"Created {total_chunks} chunks for source {input_data.source_id} "
             f"(sizes: min={min(chunk_sizes) if chunk_sizes else 0}, "
             f"max={max(chunk_sizes) if chunk_sizes else 0}, "
-            f"avg={sum(chunk_sizes) // len(chunk_sizes) if chunk_sizes else 0} chars)"
+            f"avg={sum(chunk_sizes)//len(chunk_sizes) if chunk_sizes else 0} chars)"
         )
 
         if total_chunks == 0:
@@ -457,10 +448,7 @@ async def embed_source_command(input_data: EmbedSourceInput) -> EmbedSourceOutpu
         "wait_strategy": "exponential_jitter",
         "wait_min": 1,
         "wait_max": 60,
-        "stop_on": [
-            ValueError,
-            ConfigurationError,
-        ],  # Don't retry validation/config errors
+        "stop_on": [ValueError, ConfigurationError],  # Don't retry validation/config errors
         "retry_log_level": "debug",
     },
 )

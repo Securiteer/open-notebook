@@ -201,6 +201,7 @@ class TestSourceDomain:
             assert result is True
             mock_delete.assert_called_once()
 
+
     @pytest.mark.asyncio
     async def test_vectorize_raises_valueerror_when_no_text(self):
         """Test that vectorize() raises ValueError (not DatabaseOperationError) for empty text."""

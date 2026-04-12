@@ -337,9 +337,7 @@ async def delete_notebook(
         if not notebook:
             raise HTTPException(status_code=404, detail="Notebook not found")
 
-        result = await notebook.delete(
-            delete_exclusive_sources=delete_exclusive_sources
-        )
+        result = await notebook.delete(delete_exclusive_sources=delete_exclusive_sources)
 
         return NotebookDeleteResponse(
             message="Notebook deleted successfully",

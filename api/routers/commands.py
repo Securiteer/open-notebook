@@ -66,7 +66,9 @@ async def execute_command(request: CommandExecutionRequest):
 
     except Exception as e:
         logger.error(f"Error submitting command: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to submit command")
+        raise HTTPException(
+            status_code=500, detail="Failed to submit command"
+        )
 
 
 @router.get("/commands/jobs/{job_id}", response_model=CommandJobStatusResponse)
@@ -78,7 +80,9 @@ async def get_command_job_status(job_id: str):
 
     except Exception as e:
         logger.error(f"Error fetching job status: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch job status")
+        raise HTTPException(
+            status_code=500, detail="Failed to fetch job status"
+        )
 
 
 @router.get("/commands/jobs", response_model=List[Dict[str, Any]])
@@ -96,7 +100,9 @@ async def list_command_jobs(
 
     except Exception as e:
         logger.error(f"Error listing command jobs: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to list command jobs")
+        raise HTTPException(
+            status_code=500, detail="Failed to list command jobs"
+        )
 
 
 @router.delete("/commands/jobs/{job_id}")
@@ -108,7 +114,9 @@ async def cancel_command_job(job_id: str):
 
     except Exception as e:
         logger.error(f"Error cancelling command job: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to cancel command job")
+        raise HTTPException(
+            status_code=500, detail="Failed to cancel command job"
+        )
 
 
 @router.get("/commands/registry/debug")

@@ -28,13 +28,11 @@ class CreateSourceChatSessionRequest(BaseModel):
         None, description="Optional model override for this session"
     )
 
-
 class UpdateSourceChatSessionRequest(BaseModel):
     title: Optional[str] = Field(None, description="New session title")
     model_override: Optional[str] = Field(
         None, description="Model override for this session"
     )
-
 
 class ChatMessage(BaseModel):
     id: str = Field(..., description="Message ID")
@@ -54,7 +52,6 @@ class ContextIndicator(BaseModel):
         default_factory=list, description="Note IDs used in context"
     )
 
-
 class SourceChatSessionResponse(BaseModel):
     id: str = Field(..., description="Session ID")
     title: str = Field(..., description="Session title")
@@ -68,7 +65,6 @@ class SourceChatSessionResponse(BaseModel):
         None, description="Number of messages in session"
     )
 
-
 class SourceChatSessionWithMessagesResponse(SourceChatSessionResponse):
     messages: List[ChatMessage] = Field(
         default_factory=list, description="Session messages"
@@ -77,13 +73,11 @@ class SourceChatSessionWithMessagesResponse(SourceChatSessionResponse):
         None, description="Context indicators from last response"
     )
 
-
 class SendMessageRequest(BaseModel):
     message: str = Field(..., description="User message content")
     model_override: Optional[str] = Field(
         None, description="Optional model override for this message"
     )
-
 
 class SuccessResponse(BaseModel):
     success: bool = Field(True, description="Operation success status")

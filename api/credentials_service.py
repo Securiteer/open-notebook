@@ -46,11 +46,7 @@ PROVIDER_ENV_CONFIG: Dict[str, dict] = {
         "optional": ["GOOGLE_APPLICATION_CREDENTIALS"],
     },
     "azure": {
-        "required": [
-            "AZURE_OPENAI_API_KEY",
-            "AZURE_OPENAI_ENDPOINT",
-            "AZURE_OPENAI_API_VERSION",
-        ],
+        "required": ["AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_VERSION"],
         "optional": [
             "AZURE_OPENAI_ENDPOINT_LLM",
             "AZURE_OPENAI_ENDPOINT_EMBEDDING",
@@ -142,11 +138,7 @@ def validate_url(url: str, provider: str) -> None:
 
             # Block IPv4-mapped IPv6 addresses pointing to link-local
             # e.g. ::ffff:169.254.169.254 bypasses IPv6 is_link_local check
-            if (
-                hasattr(ip, "ipv4_mapped")
-                and ip.ipv4_mapped
-                and ip.ipv4_mapped.is_link_local
-            ):
+            if hasattr(ip, "ipv4_mapped") and ip.ipv4_mapped and ip.ipv4_mapped.is_link_local:
                 raise ValueError(
                     "Link-local addresses (169.254.x.x) are not allowed for security reasons. "
                     "These addresses are used for cloud metadata endpoints."
@@ -180,9 +172,7 @@ def validate_url(url: str, provider: str) -> None:
                                 "These addresses are used for cloud metadata endpoints."
                             )
                     except ValueError as inner_ve:
-                        if "link-local" in str(inner_ve).lower() or "Link-local" in str(
-                            inner_ve
-                        ):
+                        if "link-local" in str(inner_ve).lower() or "Link-local" in str(inner_ve):
                             raise
                         # Skip non-IP addresses (e.g., IPv6 zones)
                         continue
@@ -212,9 +202,7 @@ def require_encryption_key() -> None:
         )
 
 
-def credential_to_response(
-    cred: Credential, model_count: int = 0
-) -> CredentialResponse:
+def credential_to_response(cred: Credential, model_count: int = 0) -> CredentialResponse:
     """Convert a Credential domain object to API response."""
     return CredentialResponse(
         id=cred.id or "",
@@ -442,27 +430,17 @@ async def test_credential(credential_id: str) -> dict:
             )
             lc_model = model.to_langchain()
             await lc_model.ainvoke("Hi")
-            return {
-                "provider": provider,
-                "success": True,
-                "message": "Connection successful",
-            }
+            return {"provider": provider, "success": True, "message": "Connection successful"}
 
         elif test_type == "embedding":
             model = AIFactory.create_embedding(
                 model_name=test_model, provider=provider, config=config
             )
             await model.aembed(["test"])
-            return {
-                "provider": provider,
-                "success": True,
-                "message": "Connection successful",
-            }
+            return {"provider": provider, "success": True, "message": "Connection successful"}
 
         elif test_type == "text_to_speech":
-            AIFactory.create_text_to_speech(
-                model_name=test_model, provider=provider, config=config
-            )
+            AIFactory.create_text_to_speech(model_name=test_model, provider=provider, config=config)
             return {
                 "provider": provider,
                 "success": True,
@@ -478,37 +456,17 @@ async def test_credential(credential_id: str) -> dict:
     except Exception as e:
         error_msg = str(e)
         if "401" in error_msg or "unauthorized" in error_msg.lower():
-            return {
-                "provider": provider,
-                "success": False,
-                "message": "Invalid API key",
-            }
+            return {"provider": provider, "success": False, "message": "Invalid API key"}
         elif "403" in error_msg or "forbidden" in error_msg.lower():
-            return {
-                "provider": provider,
-                "success": False,
-                "message": "API key lacks required permissions",
-            }
+            return {"provider": provider, "success": False, "message": "API key lacks required permissions"}
         elif "rate" in error_msg.lower() and "limit" in error_msg.lower():
-            return {
-                "provider": provider,
-                "success": True,
-                "message": "Rate limited - but connection works",
-            }
+            return {"provider": provider, "success": True, "message": "Rate limited - but connection works"}
         elif "not found" in error_msg.lower() and "model" in error_msg.lower():
-            return {
-                "provider": provider,
-                "success": True,
-                "message": "API key valid (test model not available)",
-            }
+            return {"provider": provider, "success": True, "message": "API key valid (test model not available)"}
         else:
             logger.debug(f"Test connection error for credential {credential_id}: {e}")
             truncated = error_msg[:100] + "..." if len(error_msg) > 100 else error_msg
-            return {
-                "provider": provider,
-                "success": False,
-                "message": f"Error: {truncated}",
-            }
+            return {"provider": provider, "success": False, "message": f"Error: {truncated}"}
 
 
 async def discover_with_config(provider: str, config: dict) -> List[dict]:
@@ -533,25 +491,22 @@ async def discover_with_config(provider: str, config: dict) -> List[dict]:
             "claude-3-haiku-20240307",
         ],
         "voyage": [
-            "voyage-3",
-            "voyage-3-lite",
-            "voyage-code-3",
-            "voyage-finance-2",
-            "voyage-law-2",
-            "voyage-multilingual-2",
+            "voyage-3", "voyage-3-lite", "voyage-code-3",
+            "voyage-finance-2", "voyage-law-2", "voyage-multilingual-2",
         ],
         "elevenlabs": [
-            "eleven_multilingual_v2",
-            "eleven_turbo_v2_5",
-            "eleven_turbo_v2",
-            "eleven_monolingual_v1",
+            "eleven_multilingual_v2", "eleven_turbo_v2_5",
+            "eleven_turbo_v2", "eleven_monolingual_v1",
         ],
     }
 
     if provider in STATIC_MODELS:
         if not api_key and provider != "ollama":
             return []
-        return [{"name": m, "provider": provider} for m in STATIC_MODELS[provider]]
+        return [
+            {"name": m, "provider": provider}
+            for m in STATIC_MODELS[provider]
+        ]
 
     # API-based discovery URLs (OpenAI-style /models endpoints)
     url_map = {
@@ -590,9 +545,7 @@ async def discover_with_config(provider: str, config: dict) -> List[dict]:
                 headers["Authorization"] = f"Bearer {api_key}"
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    f"{base_url.rstrip('/')}/models",
-                    headers=headers,
-                    timeout=30.0,
+                    f"{base_url.rstrip('/')}/models", headers=headers, timeout=30.0,
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -874,9 +827,7 @@ async def migrate_from_env() -> dict:
                 not_configured.append(provider)
                 continue
 
-            logger.info(
-                f"[{provider}] Env vars detected, checking for existing credentials"
-            )
+            logger.info(f"[{provider}] Env vars detected, checking for existing credentials")
 
             existing = await Credential.get_by_provider(provider)
             if existing:

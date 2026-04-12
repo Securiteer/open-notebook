@@ -484,7 +484,9 @@ async def get_provider_availability():
 # =============================================================================
 
 
-@router.get("/models/discover/{provider}", response_model=List[DiscoveredModelResponse])
+@router.get(
+    "/models/discover/{provider}", response_model=List[DiscoveredModelResponse]
+)
 async def discover_models(provider: str):
     """
     Discover available models from a provider without registering them.
@@ -509,8 +511,7 @@ async def discover_models(provider: str):
     except Exception as e:
         logger.error(f"Error discovering models for {provider}: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="Error discovering models. Check server logs for details.",
+            status_code=500, detail="Error discovering models. Check server logs for details."
         )
 
 
@@ -538,10 +539,7 @@ async def sync_models(provider: str):
         )
     except Exception as e:
         logger.error(f"Error syncing models for {provider}: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="Error syncing models. Check server logs for details.",
-        )
+        raise HTTPException(status_code=500, detail="Error syncing models. Check server logs for details.")
 
 
 @router.post("/models/sync", response_model=AllProvidersSyncResponse)
@@ -634,7 +632,9 @@ async def get_models_by_provider(provider: str):
         ]
     except Exception as e:
         logger.error(f"Error fetching models for {provider}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error fetching models: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching models: {str(e)}"
+        )
 
 
 def _get_preferred_model(
@@ -724,24 +724,12 @@ async def auto_assign_defaults():
         # Define slot configuration: (slot_name, model_type, current_value)
         slot_configs = [
             ("default_chat_model", "language", defaults.default_chat_model),  # type: ignore[attr-defined]
-            (
-                "default_transformation_model",
-                "language",
-                defaults.default_transformation_model,
-            ),  # type: ignore[attr-defined]
+            ("default_transformation_model", "language", defaults.default_transformation_model),  # type: ignore[attr-defined]
             ("default_tools_model", "language", defaults.default_tools_model),  # type: ignore[attr-defined]
             ("large_context_model", "language", defaults.large_context_model),  # type: ignore[attr-defined]
             ("default_embedding_model", "embedding", defaults.default_embedding_model),  # type: ignore[attr-defined]
-            (
-                "default_text_to_speech_model",
-                "text_to_speech",
-                defaults.default_text_to_speech_model,
-            ),  # type: ignore[attr-defined]
-            (
-                "default_speech_to_text_model",
-                "speech_to_text",
-                defaults.default_speech_to_text_model,
-            ),  # type: ignore[attr-defined]
+            ("default_text_to_speech_model", "text_to_speech", defaults.default_text_to_speech_model),  # type: ignore[attr-defined]
+            ("default_speech_to_text_model", "speech_to_text", defaults.default_speech_to_text_model),  # type: ignore[attr-defined]
         ]
 
         assigned: Dict[str, str] = {}

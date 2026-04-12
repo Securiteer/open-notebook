@@ -55,7 +55,6 @@ class TestMeanPoolEmbeddings:
         # Result should be same direction, just normalized
         # Original is already normalized if we normalize it
         import numpy as np
-
         orig_norm = np.linalg.norm(embedding)
         expected = [v / orig_norm for v in embedding]
         for i in range(4):
@@ -77,7 +76,6 @@ class TestMeanPoolEmbeddings:
         result = await mean_pool_embeddings(embeddings)
         # Check result is unit length
         import numpy as np
-
         norm = np.linalg.norm(result)
         assert abs(norm - 1.0) < 0.001
 
@@ -85,7 +83,6 @@ class TestMeanPoolEmbeddings:
     async def test_high_dimensional(self):
         """Test mean pooling with high-dimensional embeddings."""
         import numpy as np
-
         # Create random embeddings of dimension 768 (typical embedding size)
         np.random.seed(42)
         embeddings = [
@@ -231,6 +228,7 @@ class TestGenerateEmbedding:
             )
             assert len(result) == 3
 
+
     @pytest.mark.asyncio
     async def test_batching(self):
         """Test that large input is split into batches of EMBEDDING_BATCH_SIZE."""
@@ -259,12 +257,8 @@ class TestGenerateEmbedding:
             assert len(result) == num_texts
             # 120 texts / 50 batch size = 3 batches (50, 50, 20)
             assert mock_model.aembed.call_count == 3
-            assert (
-                len(mock_model.aembed.call_args_list[0][0][0]) == EMBEDDING_BATCH_SIZE
-            )
-            assert (
-                len(mock_model.aembed.call_args_list[1][0][0]) == EMBEDDING_BATCH_SIZE
-            )
+            assert len(mock_model.aembed.call_args_list[0][0][0]) == EMBEDDING_BATCH_SIZE
+            assert len(mock_model.aembed.call_args_list[1][0][0]) == EMBEDDING_BATCH_SIZE
             assert len(mock_model.aembed.call_args_list[2][0][0]) == 20
 
     @pytest.mark.asyncio
