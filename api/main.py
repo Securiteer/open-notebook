@@ -26,12 +26,14 @@ from api.routers import (
     models,
     notebooks,
     notes,
+    openclaw,
     podcasts,
     search,
     settings,
     source_chat,
     sources,
     speaker_profiles,
+    trading,
     transformations,
 )
 from api.routers import commands as commands_router
@@ -166,7 +168,8 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         status_code=exc.status_code,
         content={"detail": exc.detail},
         headers={
-            **(exc.headers or {}), "Access-Control-Allow-Origin": origin,
+            **(exc.headers or {}),
+            "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Methods": "*",
             "Access-Control-Allow-Headers": "*",
@@ -269,6 +272,7 @@ app.include_router(
     embedding_rebuild.router, prefix="/api/embeddings", tags=["embeddings"]
 )
 app.include_router(settings.router, prefix="/api", tags=["settings"])
+app.include_router(trading.router, prefix="/api", tags=["trading"])
 app.include_router(context.router, prefix="/api", tags=["context"])
 app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
@@ -280,6 +284,7 @@ app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(source_chat.router, prefix="/api", tags=["source-chat"])
 app.include_router(credentials.router, prefix="/api", tags=["credentials"])
 app.include_router(languages.router, prefix="/api", tags=["languages"])
+app.include_router(openclaw.router, prefix="/api", tags=["openclaw"])
 
 
 @app.get("/")
