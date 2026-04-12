@@ -32,9 +32,7 @@ class TestCredentialCascadeDelete:
         mock_model2.name = "gpt-3.5-turbo"
 
         mock_cred = AsyncMock()
-        mock_cred.get_linked_models = AsyncMock(
-            return_value=[mock_model1, mock_model2]
-        )
+        mock_cred.get_linked_models = AsyncMock(return_value=[mock_model1, mock_model2])
         mock_cred.delete = AsyncMock()
         mock_get.return_value = mock_cred
 
@@ -84,9 +82,7 @@ class TestCredentialCascadeDelete:
         # First call returns cred to delete, second returns target
         mock_get.side_effect = [mock_cred, mock_target_cred]
 
-        response = client.delete(
-            "/api/credentials/cred:123?migrate_to=cred:456"
-        )
+        response = client.delete("/api/credentials/cred:123?migrate_to=cred:456")
 
         assert response.status_code == 200
         data = response.json()
