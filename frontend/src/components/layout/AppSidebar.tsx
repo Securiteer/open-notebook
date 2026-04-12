@@ -29,6 +29,8 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { Separator } from '@/components/ui/separator'
 import {
   Book,
+  Code2,
+  TrendingUp,
   Search,
   Mic,
   Bot,
