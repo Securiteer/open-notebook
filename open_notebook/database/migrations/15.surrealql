@@ -1,0 +1,1 @@
+DEFINE FIELD IF NOT EXISTS owner ON TABLE speaker_profile TYPE record<user> ASSERT $value != NONE;

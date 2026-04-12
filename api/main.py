@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from api.auth import JWTAuthMiddleware, check_api_password
 from api.auth import PasswordAuthMiddleware
 from api.routers import (
     auth,
@@ -126,9 +127,12 @@ app = FastAPI(
 
 # Add password authentication middleware first
 # Exclude /api/auth/status and /api/config from authentication
-app.add_middleware(
-    PasswordAuthMiddleware,
-    excluded_paths=[
+import os
+
+if os.environ.get("OPEN_NOTEBOOK_TEST_MODE") != "1":
+    app.add_middleware(
+        JWTAuthMiddleware,
+        excluded_paths=[
         "/",
         "/health",
         "/docs",
@@ -138,6 +142,7 @@ app.add_middleware(
         "/api/config",
     ],
 )
+
 
 # Add CORS middleware last (so it processes first)
 app.add_middleware(

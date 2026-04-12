@@ -5,6 +5,7 @@ import { getApiUrl } from '@/lib/config'
 interface AuthState {
   isAuthenticated: boolean
   token: string | null
+  user: { id: string, email: string } | null
   isLoading: boolean
   error: string | null
   lastAuthCheck: number | null
@@ -13,7 +14,8 @@ interface AuthState {
   authRequired: boolean | null
   setHasHydrated: (state: boolean) => void
   checkAuthRequired: () => Promise<boolean>
-  login: (password: string) => Promise<boolean>
+  login: (password: string, email?: string) => Promise<boolean>
+  register: (email: string, password: string, inviteCode: string) => Promise<boolean>
   logout: () => void
   checkAuth: () => Promise<boolean>
 }
@@ -23,6 +25,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       isAuthenticated: false,
       token: null,
+      user: null,
       isLoading: false,
       error: null,
       lastAuthCheck: null,
@@ -74,46 +77,107 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      login: async (password: string) => {
+      register: async (email: string, password: string, inviteCode: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const apiUrl = await getApiUrl()
+          const response = await fetch(`${apiUrl}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password, invite_code: inviteCode })
+          })
+
+          if (response.ok) {
+             const data = await response.json()
+             set({
+               isAuthenticated: true,
+               token: data.access_token,
+               isLoading: false,
+               lastAuthCheck: Date.now(),
+               error: null
+             })
+             // Optionally fetch me profile afterwards
+             await get().checkAuth()
+             return true
+          } else {
+             const errorData = await response.json().catch(() => null)
+             set({
+               error: errorData?.detail || 'Registration failed',
+               isLoading: false,
+               isAuthenticated: false,
+               token: null
+             })
+             return false
+          }
+        } catch (error) {
+          console.error('Network error during register:', error)
+          let errorMessage = 'Registration failed'
+          if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            errorMessage = 'Unable to connect to server. Please check if the API is running.'
+          }
+          set({
+            error: errorMessage,
+            isLoading: false,
+            isAuthenticated: false,
+            token: null
+          })
+          return false
+        }
+      },
+
+      login: async (password: string, email?: string) => {
         set({ isLoading: true, error: null })
         try {
           const apiUrl = await getApiUrl()
 
-          // Test auth with notebooks endpoint
-          const response = await fetch(`${apiUrl}/api/notebooks`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${password}`,
-              'Content-Type': 'application/json'
-            }
-          })
+          // Login request to new endpoints
+          let response;
+          if (email) {
+            // Use new email/password endpoint
+            response = await fetch(`${apiUrl}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+          } else {
+            // Legacy/fallback behavior, might fail if user table empty but left for compatibility if needed. Wait no, we just migrated, we should just assume email is always present if login form passes it. But wait, `useAuth` hook passes only password! Let's update `useAuth` too!
+            // For now, if no email is provided, we simulate failure or fallback. Let's just fail if email is absent.
+             throw new Error("Email is required for login")
+          }
           
           if (response.ok) {
+            const data = await response.json()
             set({ 
               isAuthenticated: true, 
-              token: password, 
+              token: data.access_token,
               isLoading: false,
               lastAuthCheck: Date.now(),
               error: null
             })
+            // Fetch user profile immediately
+            await get().checkAuth()
             return true
           } else {
-            let errorMessage = 'Authentication failed'
+            const errorData = await response.json().catch(() => null)
+            let errorMessage = errorData?.detail || 'Authentication failed'
             if (response.status === 401) {
-              errorMessage = 'Invalid password. Please try again.'
+              errorMessage = 'Invalid email or password. Please try again.'
             } else if (response.status === 403) {
               errorMessage = 'Access denied. Please check your credentials.'
             } else if (response.status >= 500) {
               errorMessage = 'Server error. Please try again later.'
-            } else {
-              errorMessage = `Authentication failed (${response.status})`
             }
             
             set({ 
               error: errorMessage,
               isLoading: false,
               isAuthenticated: false,
-              token: null
+              token: null,
+              user: null
             })
             return false
           }
@@ -133,7 +197,8 @@ export const useAuthStore = create<AuthState>()(
             error: errorMessage,
             isLoading: false,
             isAuthenticated: false,
-            token: null
+            token: null,
+            user: null
           })
           return false
         }
@@ -143,13 +208,14 @@ export const useAuthStore = create<AuthState>()(
         set({ 
           isAuthenticated: false, 
           token: null, 
-          error: null 
+          error: null,
+          user: null
         })
       },
       
       checkAuth: async () => {
         const state = get()
-        const { token, lastAuthCheck, isCheckingAuth, isAuthenticated } = state
+        const { token, lastAuthCheck, isCheckingAuth, isAuthenticated, user } = state
 
         // If already checking, return current auth state
         if (isCheckingAuth) {
@@ -161,9 +227,9 @@ export const useAuthStore = create<AuthState>()(
           return false
         }
 
-        // If we checked recently (within 30 seconds) and are authenticated, skip
+        // If we checked recently (within 30 seconds) and are authenticated and have user, skip
         const now = Date.now()
-        if (isAuthenticated && lastAuthCheck && (now - lastAuthCheck) < 30000) {
+        if (isAuthenticated && user && lastAuthCheck && (now - lastAuthCheck) < 30000) {
           return true
         }
 
@@ -172,7 +238,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const apiUrl = await getApiUrl()
 
-          const response = await fetch(`${apiUrl}/api/notebooks`, {
+          const response = await fetch(`${apiUrl}/api/auth/me`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -181,8 +247,10 @@ export const useAuthStore = create<AuthState>()(
           })
           
           if (response.ok) {
+            const userData = await response.json()
             set({ 
-              isAuthenticated: true, 
+              isAuthenticated: true,
+              user: userData,
               lastAuthCheck: now,
               isCheckingAuth: false 
             })
@@ -191,6 +259,7 @@ export const useAuthStore = create<AuthState>()(
             set({
               isAuthenticated: false,
               token: null,
+              user: null,
               lastAuthCheck: null,
               isCheckingAuth: false
             })
@@ -201,6 +270,7 @@ export const useAuthStore = create<AuthState>()(
           set({ 
             isAuthenticated: false, 
             token: null,
+            user: null,
             lastAuthCheck: null,
             isCheckingAuth: false 
           })
