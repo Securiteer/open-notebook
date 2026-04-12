@@ -208,7 +208,6 @@ export const bnIN = {
     podcasts: "পডকাস্ট",
     models: "মডেলগুলি",
     transformations: "ট্রান্সফরমেশনস",
-    multica: "Multica",
     news: "News",
     transformation: "ট্রান্সফরমেশন",
     settings: "সেটিংস",

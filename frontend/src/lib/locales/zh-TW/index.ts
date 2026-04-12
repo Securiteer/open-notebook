@@ -208,7 +208,6 @@ export const zhTW = {
     podcasts: "播客",
     models: "模型",
     transformations: "轉換",
-    multica: "Multica",
     news: "News",
     transformation: "轉換",
     settings: "設定",

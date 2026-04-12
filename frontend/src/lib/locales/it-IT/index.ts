@@ -208,7 +208,6 @@ export const itIT = {
     podcasts: "Podcast",
     models: "Modelli",
     transformations: "Trasformazioni",
-    multica: "Multica",
     news: "News",
     transformation: "Trasformazione",
     settings: "Impostazioni",
