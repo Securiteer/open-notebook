@@ -27,6 +27,7 @@ from api.routers import (
     models,
     notebooks,
     notes,
+    podcast_cloner,
     openclaw,
     podcasts,
     search,
@@ -283,6 +284,7 @@ app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
 app.include_router(commands_router.router, prefix="/api", tags=["commands"])
 app.include_router(podcasts.router, prefix="/api", tags=["podcasts"])
+app.include_router(podcast_cloner.router, prefix="/api", tags=["podcast-cloner"])
 app.include_router(episode_profiles.router, prefix="/api", tags=["episode-profiles"])
 app.include_router(speaker_profiles.router, prefix="/api", tags=["speaker-profiles"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
