@@ -33,6 +33,7 @@ from api.routers import (
     source_chat,
     sources,
     speaker_profiles,
+    trading,
     transformations,
 )
 from api.routers import commands as commands_router
@@ -271,6 +272,7 @@ app.include_router(
     embedding_rebuild.router, prefix="/api/embeddings", tags=["embeddings"]
 )
 app.include_router(settings.router, prefix="/api", tags=["settings"])
+app.include_router(trading.router, prefix="/api", tags=["trading"])
 app.include_router(context.router, prefix="/api", tags=["context"])
 app.include_router(sources.router, prefix="/api", tags=["sources"])
 app.include_router(insights.router, prefix="/api", tags=["insights"])
