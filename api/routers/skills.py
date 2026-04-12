@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from typing import List, Dict, Any
-from api.models import SkillResponse, SkillCreate, SkillRateRequest
-from open_notebook.domain.skill import Skill, InstalledSkill
+from typing import Any, Dict, List
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
+from api.models import SkillCreate, SkillRateRequest, SkillResponse
+from open_notebook.domain.skill import InstalledSkill, Skill
 from open_notebook.domain.user import User
 
 router = APIRouter(prefix="/skills", tags=["skills"])
@@ -36,6 +38,16 @@ MOCK_SKILLS: List[Dict[str, Any]] = [
         "content": "You are a summarization expert. Read the provided text and produce a concise summary highlighting the key points.",
         "rating": 4.9,
         "rating_count": 300,
+    },
+    {
+        "name": "MarkItDown Converter",
+        "description": "Converts various files (PDF, Word, Excel, PowerPoint) to Markdown.",
+        "author": "Microsoft",
+        "version": "1.0.0",
+        "instructions": "Attach an office document (PDF, Word, Excel, etc.) and I will convert it to Markdown format.",
+        "content": "You are MarkItDown, an expert file conversion assistant. I will provide you with office documents or other files. Please extract their content and return it perfectly formatted as Markdown, preserving headings, lists, tables, and links where applicable.",
+        "rating": 4.8,
+        "rating_count": 150,
     },
 ]
 
