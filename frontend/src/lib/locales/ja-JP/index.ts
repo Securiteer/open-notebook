@@ -208,6 +208,7 @@ export const jaJP = {
     podcasts: "ポッドキャスト",
     models: "モデル",
     transformations: "トランスフォーメーション",
+    news: "News",
     transformation: "トランスフォーメーション",
     settings: "設定",
     advanced: "詳細設定",

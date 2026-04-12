@@ -208,6 +208,7 @@ export const enUS = {
     podcasts: "Podcasts",
     models: "Models",
     transformations: "Transformations",
+    news: "News",
     transformation: "Transformation",
     settings: "Settings",
     advanced: "Advanced",

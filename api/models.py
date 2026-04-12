@@ -18,7 +18,7 @@ class NotebookUpdate(BaseModel):
 
 
 class NotebookResponse(BaseModel):
-    id: str
+    id: Optional[str] = None
     name: str
     description: str
     archived: bool
@@ -74,7 +74,7 @@ class ModelCreate(BaseModel):
 
 
 class ModelResponse(BaseModel):
-    id: str
+    id: Optional[str] = None
     name: str
     provider: str
     type: str
@@ -129,7 +129,7 @@ class TransformationUpdate(BaseModel):
 
 
 class TransformationResponse(BaseModel):
-    id: str
+    id: Optional[str] = None
     name: str
     title: str
     description: str
@@ -142,19 +142,17 @@ class TransformationResponse(BaseModel):
 class TransformationExecuteRequest(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
-    transformation_id: str = Field(
-        ..., description="ID of the transformation to execute"
-    )
+    transformation_id: Optional[str] = Field(None, description="ID of the transformation to execute")
     input_text: str = Field(..., description="Text to transform")
-    model_id: str = Field(..., description="Model ID to use for the transformation")
+    model_id: Optional[str] = Field(None, description="Model ID to use for the transformation")
 
 
 class TransformationExecuteResponse(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
     output: str = Field(..., description="Transformed text")
-    transformation_id: str = Field(..., description="ID of the transformation used")
-    model_id: str = Field(..., description="Model ID used")
+    transformation_id: Optional[str] = Field(None, description="ID of the transformation used")
+    model_id: Optional[str] = Field(None, description="Model ID used")
 
 
 # Default Prompt API models
@@ -187,7 +185,7 @@ class NoteUpdate(BaseModel):
 
 
 class NoteResponse(BaseModel):
-    id: str
+    id: Optional[str] = None
     title: Optional[str]
     content: Optional[str]
     note_type: Optional[str]
@@ -198,7 +196,7 @@ class NoteResponse(BaseModel):
 
 # Embedding API models
 class EmbedRequest(BaseModel):
-    item_id: str = Field(..., description="ID of the item to embed")
+    item_id: Optional[str] = Field(None, description="ID of the item to embed")
     item_type: str = Field(..., description="Type of item (source, note)")
     async_processing: bool = Field(
         False, description="Process asynchronously in background"
@@ -208,7 +206,7 @@ class EmbedRequest(BaseModel):
 class EmbedResponse(BaseModel):
     success: bool = Field(..., description="Whether embedding was successful")
     message: str = Field(..., description="Result message")
-    item_id: str = Field(..., description="ID of the item that was embedded")
+    item_id: Optional[str] = Field(None, description="ID of the item that was embedded")
     item_type: str = Field(..., description="Type of item that was embedded")
     command_id: Optional[str] = Field(
         None, description="Command ID for async processing"
@@ -227,7 +225,7 @@ class RebuildRequest(BaseModel):
 
 
 class RebuildResponse(BaseModel):
-    command_id: str = Field(..., description="Command ID to track progress")
+    command_id: Optional[str] = Field(None, description="Command ID to track progress")
     total_items: int = Field(..., description="Estimated number of items to process")
     message: str = Field(..., description="Status message")
 
@@ -246,7 +244,7 @@ class RebuildStats(BaseModel):
 
 
 class RebuildStatusResponse(BaseModel):
-    command_id: str = Field(..., description="Command ID")
+    command_id: Optional[str] = Field(None, description="Command ID")
     status: str = Field(..., description="Status: queued, running, completed, failed")
     progress: Optional[RebuildProgress] = None
     stats: Optional[RebuildStats] = None
@@ -331,7 +329,7 @@ class SourceUpdate(BaseModel):
 
 
 class SourceResponse(BaseModel):
-    id: str
+    id: Optional[str] = None
     title: Optional[str]
     topics: Optional[List[str]]
     asset: Optional[AssetModel]
@@ -350,7 +348,7 @@ class SourceResponse(BaseModel):
 
 
 class SourceListResponse(BaseModel):
-    id: str
+    id: Optional[str] = None
     title: Optional[str]
     topics: Optional[List[str]]
     asset: Optional[AssetModel]
@@ -377,14 +375,14 @@ class ContextConfig(BaseModel):
 
 
 class ContextRequest(BaseModel):
-    notebook_id: str = Field(..., description="Notebook ID to get context for")
+    notebook_id: Optional[str] = Field(None, description="Notebook ID to get context for")
     context_config: Optional[ContextConfig] = Field(
         None, description="Context configuration"
     )
 
 
 class ContextResponse(BaseModel):
-    notebook_id: str
+    notebook_id: Optional[str] = None
     sources: List[Dict[str, Any]] = Field(..., description="Source context data")
     notes: List[Dict[str, Any]] = Field(..., description="Note context data")
     total_tokens: Optional[int] = Field(None, description="Estimated token count")
@@ -392,8 +390,8 @@ class ContextResponse(BaseModel):
 
 # Insights API models
 class SourceInsightResponse(BaseModel):
-    id: str
-    source_id: str
+    id: Optional[str] = None
+    source_id: Optional[str] = None
     insight_type: str
     content: str
     created: str
@@ -405,8 +403,8 @@ class InsightCreationResponse(BaseModel):
 
     status: Literal["pending"] = "pending"
     message: str = "Insight generation started"
-    source_id: str
-    transformation_id: str
+    source_id: Optional[str] = None
+    transformation_id: Optional[str] = None
     command_id: Optional[str] = None
 
 
@@ -417,7 +415,7 @@ class SaveAsNoteRequest(BaseModel):
 class CreateSourceInsightRequest(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
-    transformation_id: str = Field(..., description="ID of transformation to apply")
+    transformation_id: Optional[str] = Field(None, description="ID of transformation to apply")
     model_id: Optional[str] = Field(
         None, description="Model ID (uses default if not provided)"
     )
@@ -595,7 +593,7 @@ class UpdateCredentialRequest(BaseModel):
 class CredentialResponse(BaseModel):
     """Response for a credential (never includes api_key)."""
 
-    id: str
+    id: Optional[str] = None
     name: str
     provider: str
     modalities: List[str]
@@ -634,7 +632,7 @@ class DiscoveredModelResponse(BaseModel):
 class DiscoverModelsResponse(BaseModel):
     """Response from model discovery."""
 
-    credential_id: str
+    credential_id: Optional[str] = None
     provider: str
     discovered: List[DiscoveredModelResponse]
 
@@ -661,7 +659,7 @@ class RegisterModelsResponse(BaseModel):
 
 
 class NotebookDeletePreview(BaseModel):
-    notebook_id: str = Field(..., description="ID of the notebook")
+    notebook_id: Optional[str] = Field(None, description="ID of the notebook")
     notebook_name: str = Field(..., description="Name of the notebook")
     note_count: int = Field(..., description="Number of notes that will be deleted")
     exclusive_source_count: int = Field(
@@ -679,3 +677,42 @@ class NotebookDeleteResponse(BaseModel):
     unlinked_sources: int = Field(
         ..., description="Number of sources unlinked from notebook"
     )
+
+class NewsArticleResponse(BaseModel):
+    id: Optional[str] = None
+    category: str
+    source: str
+    title: str
+    summary: str
+    image: Optional[str] = None
+    url: str
+    time: str
+    published_date: Optional[str] = None
+    likes: int = 0
+    dislikes: int = 0
+
+# Skill Models
+class SkillBase(BaseModel):
+    name: str
+    description: str
+    author: str = "Community"
+    version: str = "1.0.0"
+    instructions: str = ""
+    content: str
+
+
+class SkillCreate(SkillBase):
+    pass
+
+
+class SkillResponse(SkillBase):
+    id: str
+    rating: float
+    rating_count: int
+    created: str
+    updated: str
+    is_installed: bool = False
+
+
+class SkillRateRequest(BaseModel):
+    rating: float = Field(..., ge=1, le=5)
