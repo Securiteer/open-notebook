@@ -2118,7 +2118,6 @@ dev = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
@@ -2167,7 +2166,6 @@ provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "mypy", specifier = ">=1.19.1" },
     { name = "pre-commit", specifier = ">=4.1.0" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "ruff", specifier = ">=0.14.13" },
