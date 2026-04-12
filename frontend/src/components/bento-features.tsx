@@ -179,10 +179,6 @@ function LearningIllustration() {
           <motion.div
             key={`particle-${i}`}
             className="absolute w-2 h-2 rounded-full"
-            style={{
-              background: `radial-gradient(circle, rgba(96, 165, 250, ${0.8 - i * 0.08}) 0%, transparent 70%)`,
-              boxShadow: "0 0 10px rgba(96, 165, 250, 0.5)",
-            }}
             initial={{ opacity: 0 }}
             animate={{
               opacity: [0, 0.8, 0],

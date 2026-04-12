@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from typing import List, Dict, Any
-from api.models import SkillResponse, SkillCreate, SkillRateRequest
-from open_notebook.domain.skill import Skill, InstalledSkill
+from typing import Any, Dict, List
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
+from api.models import SkillCreate, SkillRateRequest, SkillResponse
+from open_notebook.domain.skill import InstalledSkill, Skill
 from open_notebook.domain.user import User
 
 router = APIRouter(prefix="/skills", tags=["skills"])

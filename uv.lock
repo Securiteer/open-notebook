@@ -2163,7 +2163,6 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tomli" },
     { name = "uvicorn" },
-    { name = "websockets" },
 ]
 
 [package.optional-dependencies]
@@ -2228,7 +2227,6 @@ requires-dist = [
     { name = "tomli", specifier = ">=2.0.2" },
     { name = "types-requests", marker = "extra == 'dev'", specifier = ">=2.32.0.20241016" },
     { name = "uvicorn", specifier = ">=0.24.0" },
-    { name = "websockets", specifier = ">=15.0.1" },
 ]
 provides-extras = ["dev"]
 
