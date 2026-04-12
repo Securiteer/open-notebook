@@ -48,3 +48,6 @@ async def get_status():
         return {"status": "success", "message": "Running", "output": result.stdout}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+# End of multica router
