@@ -679,3 +679,30 @@ class NotebookDeleteResponse(BaseModel):
     unlinked_sources: int = Field(
         ..., description="Number of sources unlinked from notebook"
     )
+
+
+# Skill Models
+class SkillBase(BaseModel):
+    name: str
+    description: str
+    author: str = "Community"
+    version: str = "1.0.0"
+    instructions: str = ""
+    content: str
+
+
+class SkillCreate(SkillBase):
+    pass
+
+
+class SkillResponse(SkillBase):
+    id: str
+    rating: float
+    rating_count: int
+    created: str
+    updated: str
+    is_installed: bool = False
+
+
+class SkillRateRequest(BaseModel):
+    rating: float = Field(..., ge=1, le=5)
